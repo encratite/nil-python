@@ -6,5 +6,5 @@ class create_thread(threading.Thread):
 		self.function = function
 		self.start()
 		
-	def run():
+	def run(self):
 		self.function()
