@@ -30,3 +30,12 @@ def get_extension(path):
 		return None
 	else:
 		return path[offset + 1 : ]
+		
+def append(path, data):
+	try:
+		file = open(path, 'ab')
+		file.write(data)
+		file.close()
+		return True
+	except IOError:
+		return None
