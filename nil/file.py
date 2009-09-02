@@ -1,3 +1,10 @@
+def exists(path):
+	try:
+		open(path, 'rb')
+		return True
+	except IOError:
+		return False
+
 def write_file(path, data):
 	try:
 		file = open(path, 'w+b')
