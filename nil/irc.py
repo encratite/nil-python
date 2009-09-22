@@ -1,4 +1,5 @@
-import socket, time, random
+from __future__ import absolute_import
+import socket, random, time, nil.thread
 
 colon = ':'
 delimiter = ' '
@@ -69,6 +70,19 @@ class irc_client:
 		self.auto_reconnect = True
 		self.auto_reconnect_delay = 5
 		self.read_size = 1024
+		self.last_line = None
+		self.timeout = 600
+		
+		nil.thread.create_thread(lambda: self.timeout_thread())
+		
+	def timeout_thread(self):
+		while True:
+			if self.last_line != None and time.time() - self.last_line > self.timeout:
+				print 'Timeout occured'
+				nil.thread.create_thread(lambda: self.perform_rocket())
+				time.sleep(self.auto_reconnect_delay)
+				continue
+			time.sleep(1)
 		
 	def connect(self, server, port, nick, user, local_host, real_name):
 		self.server = server
@@ -112,12 +126,24 @@ class irc_client:
 		time.sleep(self.auto_reconnect_delay)
 		self.reconnect()
 		
+	def perform_reconnect(self):
+		try:
+			self.socket.close()
+		except IOError:
+			pass
+		self.got_disconnected()
+		
 	def receive_data(self):
 		self.buffer = ''
 		while True:
-			new_data = self.socket.recv(self.read_size)
+			try:
+				new_data = self.socket.recv(self.read_size)
+				self.last_line = time.time()
+			except IOError:
+				self.perform_reconnect()
+				return
 			if len(new_data) == 0:
-				self.got_disconnected()
+				self.perform_reconnect()
 				return
 			self.buffer += new_data
 			self.process_new_data()
