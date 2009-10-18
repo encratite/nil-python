@@ -79,7 +79,7 @@ class irc_client:
 		while True:
 			if self.last_line != None and time.time() - self.last_line > self.timeout:
 				print 'Timeout occured'
-				nil.thread.create_thread(lambda: self.perform_rocket())
+				nil.thread.create_thread(lambda: self.perform_reconnect())
 				time.sleep(self.auto_reconnect_delay)
 				continue
 			time.sleep(1)
