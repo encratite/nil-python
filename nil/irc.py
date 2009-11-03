@@ -64,7 +64,7 @@ class irc_client:
 		self.on_invite = do_nothing
 		self.on_channel_message = do_nothing
 		self.on_private_message = do_nothing
-		self.on_nick_name_in_use = self.change_nick
+		self.on_nick_name_in_use = self.random_nick
 		self.on_quit = do_nothing
 		
 		self.auto_reconnect = True
@@ -207,12 +207,12 @@ class irc_client:
 				function(tokens)
 				break
 				
-	def nick(self, new_nick):
+	def change_nick(self, new_nick):
 		self.send_line('NICK %s' % new_nick)
 				
-	def change_nick(self):
+	def random_nick(self):
 		new_nick = '%s%d' % (self.nick, random.randint(10, 99))
-		self.nick(new_nick)
+		self.change_nick(new_nick)
 				
 	def event_end_of_motd(self, tokens):
 		actual_nick = tokens[2]
