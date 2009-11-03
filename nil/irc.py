@@ -78,6 +78,8 @@ class irc_client:
 		self.ping_counter = 0
 		self.maximum_ping_count = None
 		
+		self.reclaiming_nick = False
+		
 		nil.thread.create_thread(lambda: self.timeout_thread())
 		
 	def timeout_thread(self):
@@ -96,6 +98,8 @@ class irc_client:
 		self.user = user
 		self.local_host = local_host
 		self.real_name = real_name
+		
+		self.reclaiming_nick = False
 		
 		while True:
 			self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
@@ -211,8 +215,9 @@ class irc_client:
 		self.send_line('NICK %s' % new_nick)
 				
 	def random_nick(self):
-		new_nick = '%s%d' % (self.nick, random.randint(10, 99))
-		self.change_nick(new_nick)
+		if not self.reclaiming_nick:
+			new_nick = '%s%d' % (self.nick, random.randint(10, 99))
+			self.change_nick(new_nick)
 				
 	def event_end_of_motd(self, tokens):
 		actual_nick = tokens[2]
@@ -220,18 +225,21 @@ class irc_client:
 			print 'Somebody else is using our nick, trying to reclaim it'
 			self.desired_nick = self.nick
 			self.nick = actual_nick
+			print 'Desired nick: %s, actual nick: %s' % (self.desired_nick, self.nick)
 			nil.thread.create_thread(self.reclaim_nick)
 		else:
 			self.nick = actual_nick
 		self.on_entry()
 		
 	def reclaim_nick(self):
+		self.reclaiming_nick = True
 		while True:
 			if self.nick == self.desired_nick:
 				print 'Successfully reclaimed our nick'
 				break
 			self.change_nick(self.desired_nick)
 			time.sleep(self.nick_change_delay)
+		self.reclaiming_nick = False
 		
 	def event_nick_name_in_use(self, tokens):
 		self.on_nick_name_in_use()
