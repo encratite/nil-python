@@ -73,6 +73,9 @@ class irc_client:
 		self.last_line = None
 		self.timeout = 600
 		
+		self.ping_counter = 0
+		self.maximum_ping_count = None
+		
 		nil.thread.create_thread(lambda: self.timeout_thread())
 		
 	def timeout_thread(self):
@@ -186,10 +189,16 @@ class irc_client:
 		
 		if tokens[0] == 'PING' and len(tokens) == 2:
 			self.send_line('PONG %s' % tokens[1])
+			self.ping_counter += 1
+			if self.maximum_ping_count != None and self.ping_counter >= self.maximum_ping_count:
+				print 'Exceeded maximum ping count, reconnecting'
+				self.perform_reconnect()
 			return
 			
 		if len(tokens) < 3:
 			return
+			
+		self.ping_counter = 0
 			
 		for command, function in commands:
 			if command == tokens[1]:
