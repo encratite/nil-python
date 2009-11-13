@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-import os, time, threading, nil.directory, nil.file, nil.thread
+import os, time, threading, nil.directory, nil.file, nil.thread, nil.environment
 
 cpp_extension = 'cpp'
 object_extension = 'o'
@@ -16,7 +16,7 @@ class builder:
 		
 		self.output = output
 		
-		self.threads = int(os.environ.get('NUMBER_OF_PROCESSORS', 1))
+		self.threads = nil.environment.get_processor_count()
 		
 		self.source('source')
 		
