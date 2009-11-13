@@ -1,4 +1,6 @@
-import os, nil.directory, nil.file
+from __future__ import absolute_import
+
+import os, time, threading, nil.directory, nil.file, nil.thread
 
 cpp_extension = 'cpp'
 object_extension = 'o'
@@ -14,7 +16,11 @@ class builder:
 		
 		self.output = output
 		
+		self.threads = int(os.environ.get('NUMBER_OF_PROCESSORS', 1))
+		
 		self.source('source')
+		
+		self.lock = threading.Lock()
 		
 	def include(self, directory):
 		self.include_directories.append(directory)
@@ -39,32 +45,73 @@ class builder:
 		else:
 			output = path
 			
-		return os.path.join(self.output_directory, os.path.basename(output + object_extension))
+		return os.path.join(self.object_directory, os.path.basename(output + object_extension))
 		
 	def command(self, command_string):
 		print 'Executing: %s' % command_string
 		return os.system(command_string) == 0
 		
+	def worker(self):
+		while True:
+			self.lock.acquire()
+			if len(self.targets) == 0 or self.compilation_failed:
+				self.lock.release()
+				return
+			source, object = self.targets[0]
+			self.targets = self.targets[1 : ]
+			self.lock.release()
+			
+			name = '%s: ' % threading.currentThread().name
+			print name,
+			if not self.command('g++ -c %s -o %s%s' % (source, object, self.include_string)):
+				self.lock.acquire()
+				if not self.compilation_failed:
+					print 'Compilation failed'
+					self.compilation_failed = False
+				self.lock.release()
+				return
+			
+		
 	def compile(self):
-		self.make_directory(self.output_directory)
+		self.make_directory(self.object_directory)
 		
-		include_string = ''
+		self.include_string = ''
 		for directory in self.include_directories:
-			include_string += ' -I%s' % directory
+			self.include_string += ' -I%s' % directory
 			
-		object_string = ''
-		
+		self.object_string = ''
 		for source, object in self.targets:
-			if not self.command('g++ -c %s -o %s%s' % (source, object, include_string)):
-				print 'Compilation failed'
-				return False
-			object_string += ' %s' % object
+			self.object_string += ' %s' % object
+		
+		thread_string = 'thread'
+		if self.threads > 1:
+			thread_string += 's'
 			
-		self.object_string = object_string
+		print 'Compiling project with %d %s' % (self.threads, thread_string)
+		
+		self.start = time.time()
 			
-		return True
+		threads = []
+		self.compilation_failed = False
+		counter = 1
+		for i in range(0, self.threads):
+			thread = nil.thread.create_thread(self.worker, 'Worker %d' % counter)
+			threads.append(thread)
+			counter += 1
+			
+		for thread in threads:
+			thread.join()
+			
+		success = not self.compilation_failed
+		
+		difference = time.time() - self.start		
+		if success:
+			print 'Compilation finished after %.2f s' % difference
+			
+		return success
 		
 	def make_targets(self):
+		self.make_directory(self.output_directory)
 		self.targets = map(lambda path: (path, self.get_object(path)), self.source_files)
 		
 	def get_library_string(self):
@@ -84,7 +131,11 @@ class builder:
 		return True
 		
 	def make_static_library(self):
-		output = os.path.join(self.output_directory, 'lib%s.a%s' % self.output)
+		output = os.path.join(self.output_directory, 'lib%s.a' % self.output)
+		try:
+			os.unlink(output)
+		except OSError:
+			pass
 		return self.command('ar -rsc %s%s' % (output, self.object_string))
 		
 	def program(self):
