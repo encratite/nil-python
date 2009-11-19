@@ -1,7 +1,10 @@
 import os, nil.file
 
 def get_list(path):
-	entries = sorted(os.listdir(path))
+	try:
+		entries = sorted(os.listdir(path))
+	except OSError:
+		return None
 	directories = []
 	files = []
 	for entry in entries:
