@@ -16,5 +16,8 @@ def get_list(path):
 	return directories, files
 	
 def get_files_by_extension(path, extension):
-	directories, files = get_list(path)
+	result = get_list(path)
+	if result == None:
+		return None
+	directories, files = result
 	return filter(lambda path: nil.file.get_extension(path) == extension, files)

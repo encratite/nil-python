@@ -27,7 +27,8 @@ class builder:
 		
 	def source(self, directory):
 		files = nil.directory.get_files_by_extension(directory, cpp_extension)
-		self.source_files += files
+		if files != None:
+			self.source_files += files
 		
 	def library(self, library):
 		self.libraries.append(library)
@@ -67,7 +68,7 @@ class builder:
 				self.lock.acquire()
 				if not self.compilation_failed:
 					print 'Compilation failed'
-					self.compilation_failed = False
+					self.compilation_failed = True
 				self.lock.release()
 				return
 			
