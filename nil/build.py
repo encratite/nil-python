@@ -67,7 +67,7 @@ class builder:
 			if not self.command('g++ -c %s -o %s%s' % (source, object, self.include_string)):
 				self.lock.acquire()
 				if not self.compilation_failed:
-					nil.printer.write('Compilation failed')
+					nil.printer.write_line('Compilation failed')
 					self.compilation_failed = True
 				self.lock.release()
 				return
