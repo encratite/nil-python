@@ -49,7 +49,7 @@ class builder:
 		return os.path.join(self.object_directory, os.path.basename(output + object_extension))
 		
 	def command(self, command_string):
-		nil.printer.write_line('Executing: %s' % command_string)
+		nil.printer.line('Executing: %s' % command_string)
 		return os.system(command_string) == 0
 		
 	def worker(self):
