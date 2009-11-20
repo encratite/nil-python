@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-import os, time, threading, nil.directory, nil.file, nil.thread, nil.environment
+import os, time, threading, nil.directory, nil.file, nil.thread, nil.environment, nil.printer
 
 cpp_extension = 'cpp'
 object_extension = 'o'
@@ -63,11 +63,11 @@ class builder:
 			self.lock.release()
 			
 			name = '%s: ' % threading.currentThread().name
-			print name,
+			nil.printer.write(name)
 			if not self.command('g++ -c %s -o %s%s' % (source, object, self.include_string)):
 				self.lock.acquire()
 				if not self.compilation_failed:
-					print 'Compilation failed'
+					nil.printer.write('Compilation failed')
 					self.compilation_failed = True
 				self.lock.release()
 				return
