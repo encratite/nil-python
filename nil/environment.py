@@ -1,4 +1,4 @@
-import sys, os, subprocess
+import sys, os
 
 def is_windows():
 	return sys.platform == 'win32'
@@ -12,10 +12,7 @@ def get_processor_count():
 def get_script_path():
 	return os.path.join(os.getcwd(), sys.argv[0])
 
-def has_command(arguments):
-	try:
-		process = subprocess.Popen(arguments, bufsize = 0, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-		process.wait()
-		return process.returncode == 0
-	except OSError:
-		return False
+def unix_like():
+	if is_windows():
+		print 'This script is intended to be used with UNIX-like operating systems (Linux, BSD, etc.) only.'
+		sys.exit(1)
