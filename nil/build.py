@@ -138,7 +138,7 @@ class builder:
 			os.unlink(output)
 		except OSError:
 			pass
-		return self.command('ar -rsc %s%s' % (output, self.object_string))
+		return self.command('ar -cvq %s%s' % (output, self.object_string))
 		
 	def program(self):
 		self.make_targets()
