@@ -67,7 +67,7 @@ class builder:
 			if not self.command('g++ -c %s -o %s%s' % (source, object, self.include_string)):
 				self.lock.acquire()
 				if not self.compilation_failed:
-					nil.printer.write_line('Compilation failed')
+					nil.printer.line('Compilation failed')
 					self.compilation_failed = True
 				self.lock.release()
 				return
@@ -132,7 +132,8 @@ class builder:
 		return True
 		
 	def make_static_library(self):
-		output = os.path.join(self.output_directory, 'lib%s.a' % self.output)
+		self.library = 'lib%s.a' % self.output
+		output = os.path.join(self.output_directory, self.library)
 		try:
 			os.unlink(output)
 		except OSError:
