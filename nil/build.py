@@ -118,14 +118,14 @@ class builder:
 	def get_library_string(self):
 		library_string = ''
 		for library in self.libraries:
-			library_string += ' -L%s' % library
+			library_string += ' -l%s' % library
 		return library_string
 		
 	def link_program(self):
 		library_string = self.get_library_string()
 		
 		output_path = os.path.join(self.output_directory, self.output)
-		if not self.command('g++ -o %s%s%s' % (output_path, library_string, self.object_string)):
+		if not self.command('g++ -o %s%s%s' % (output_path, self.object_string, library_string)):
 			print 'Failed to link'
 			return False
 
