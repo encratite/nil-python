@@ -149,7 +149,7 @@ class builder:
 	def link_dynamic_library(self):
 		self.library = '%s.so' % self.output
 		output = os.path.join(self.output_directory, self.library)
-		return self.command('g++ -dynamic -o %s%s' % (output, self.object_string))
+		return self.command('g++ -shared -o %s%s' % (output, self.object_string))
 		
 	def program(self):
 		self.make_targets()
