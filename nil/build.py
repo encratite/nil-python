@@ -11,6 +11,8 @@ class builder:
 		self.source_files = []
 		self.libraries = []
 		
+		self.pic = False
+		
 		self.output_directory = 'output'
 		self.object_directory = 'object'
 		
@@ -62,9 +64,13 @@ class builder:
 			self.targets = self.targets[1 : ]
 			self.lock.release()
 			
+			fpic_string = ''
+			if self.pic:
+				fpic_string = ' -fPIC'
+			
 			name = '%s: ' % threading.currentThread().name
 			nil.printer.write(name)
-			if not self.command('g++ -c %s -o %s%s' % (source, object, self.include_string)):
+			if not self.command('g++ -c %s%s -o %s%s' % (source, fpic_string, object, self.include_string)):
 				self.lock.acquire()
 				if not self.compilation_failed:
 					nil.printer.line('Compilation failed')
@@ -131,7 +137,7 @@ class builder:
 
 		return True
 		
-	def make_static_library(self):
+	def link_static_library(self):
 		self.library = 'lib%s.a' % self.output
 		output = os.path.join(self.output_directory, self.library)
 		try:
@@ -140,10 +146,20 @@ class builder:
 			pass
 		return self.command('ar -cq %s%s' % (output, self.object_string))
 		
+	def link_dynamic_library(self):
+		self.library = '%s.so' % self.output
+		output = os.path.join(self.output_directory, self.library)
+		return self.command('g++ -dynamic -o %s%s' % (output, self.object_string))
+		
 	def program(self):
 		self.make_targets()
 		return self.compile() and self.link_program()
 
 	def static_library(self):
 		self.make_targets()
-		return self.compile() and self.make_static_library()
+		return self.compile() and self.link_static_library()
+		
+	def dynamic_library(self):
+		self.make_targets()
+		self.pic = True
+		return self.compile() and self.link_dynamic_library()
