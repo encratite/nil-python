@@ -24,8 +24,7 @@ def command(input):
 def symlink(target, link_name):
 	if os.path.exists(link_name):
 		return True
-		
-	#print 'Creating a symlink to %s at %s' % (target, link_name)
+
 	return command('sudo ln -s %s %s' % (target, link_name))
 
 def install_packages(packages):
@@ -43,16 +42,16 @@ def install_packages(packages):
 		print 'Unable to install the specified packages (%s) - only Ubuntu and Debian are currently supported.' % packages
 		return False
 
-def setup_local_symlink(local_directory, target):
+def setup_local_symlink(local_directory, target, link):
 	root = os.path.dirname(nil.environment.get_script_path())
 	
 	target_path = os.path.join(root, target)
-	symlink_path = os.path.join('/usr/local', local_directory, target)
+	symlink_path = os.path.join('/usr/local', local_directory, link)
 	
 	symlink(target_path, symlink_path)
 	
 def include(target):
-	setup_local_symlink('include', target)
+	setup_local_symlink('include', target, target)
 	
 def library(target):
-	setup_local_symlink('lib', target)
+	setup_local_symlink('lib', target, os.path.basename(target))
